@@ -1,0 +1,69 @@
+.backButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: 16px;
+  color: #555;
+}
+
+.inputContainer {
+  position: fixed;
+  bottom: 42px;
+  margin-left: 20px;
+  display: flex;
+  width: 320px;
+  height: 42px;
+  border-radius: 5px;
+  border: 1px solid #888888;
+}
+
+.inputText {
+  display: flex;
+  width: 265px;
+  height: 21px;
+  margin-top: 10.5px;
+  margin-left: 16px;
+  margin-right: 8px;
+  border: none;
+}
+
+.upArrow {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  background-color: #b4b4b4;
+  border: none;
+  color: #ffffff;
+  margin-right: 11px;
+  border-radius: 100px;
+  margin-top: 11px;
+}
+
+.option {
+  font-size: 15px;
+  margin: 12px 0;
+  color: #222;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.sendBtn {
+  margin-left: 8px;
+  border: none;
+  background-color: #eee;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}

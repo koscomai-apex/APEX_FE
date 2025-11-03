@@ -1,0 +1,25 @@
+.container {
+  width: 360dp;
+  height: 782dp;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 20px;
+  margin-left: 20px;
+}
+
+.totalPrice {
+  font-size: 28px;
+  margin-left: 20px;
+  margin-bottom: 24px;
+}
+
+.stockList {
+  width: 320px;
+  height: 208px;
+  margin-left: 20px;
+}

@@ -1,0 +1,272 @@
+.container {
+  width: 360dp;
+  height: 782dp;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+  margin-bottom: 21px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: 16px;
+  color: #555;
+}
+
+.stockName {
+  margin-left: 20px;
+  font-size: 20px;
+}
+
+.priceDisplay {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.currentPrice {
+  font-size: 28px;
+  margin-left: 20px;
+}
+
+.tabButtons {
+  width: 100px;
+  height: 29px;
+  display: flex;
+  border-radius: 100px;
+  background-color: #e9eaf5;
+  overflow: hidden; /*내부 버튼이 radius 밖으로 안 나가게*/
+  position: relative;
+  margin-right: 20px;
+}
+
+.tabButton {
+  flex: 1;
+  border: none;
+  background: transparent; /* 투명 */
+  color: #555;
+  font-size: 15px;
+  cursor: pointer;
+  z-index: 2; /* 배경 위로 */
+}
+
+.tabButton.active {
+  background-color: #4348a4;
+  color: white;
+  border-radius: 100px;
+}
+
+.tabButton.inactive {
+  background-color: #e9eaf5;
+  color: black;
+  border-radius: 100px;
+}
+
+.graphSection {
+  width: 320px;
+  height: 305px;
+  margin-left: 20px;
+  margin-bottom: 36px;
+}
+
+.graphPlaceholder {
+  background-color: transparent; /* 배경색 투명으로 설정 */
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.timeframeButtons {
+  display: flex;
+  justify-content: space-around; /* 이미지처럼 간격 조절 */
+  background-color: white; /* 이미지 배경색 흰색 */
+  padding: 10px 0;
+  border-radius: 8px;
+}
+
+.timeframeButton {
+  background: none;
+  border: none;
+  padding: 8px 12px; /* 패딩 조절 */
+  cursor: pointer;
+  font-size: 15px; /* 폰트 크기 조절 */
+  color: #666; /* 이미지처럼 굵게 */
+  border-radius: 20px; /* 라운드 처리 */
+}
+
+.timeframeButton:hover {
+  background-color: #e9eaf5;
+  border-radius: 20px;
+}
+
+.timeframeButton.active {
+  background-color: #e9eaf5;
+}
+
+.sentimentSection {
+  margin-left: 20px;
+  margin-top: 12px;
+  border-radius: 8px;
+}
+
+.sentimentTitle {
+  font-size: 18px;
+  color: #1e1e1e;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.sentimentScore {
+  font-size: 30px;
+  font-weight: bold;
+  color: #ff0000;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.sentimentDate {
+  font-size: 10px;
+  color: #696969;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.sentimentDetails {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding-top: 10px;
+  width: 320px;
+}
+
+.sentimentItem {
+  display: flex;
+  flex-direction: column;
+  height: 64px;
+  width: 86px;
+  border-radius: 10px;
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
+.sentimentLabel {
+  font-size: 14px;
+  color: #696969;
+  margin-bottom: 4px;
+}
+
+.sentimentValue {
+  font-size: 20px;
+  color: #696969;
+}
+
+.sentimentItem:nth-child(1) {
+  background-color: #eef4fc;
+}
+.sentimentItem:nth-child(2) {
+  background-color: #effbef;
+}
+.sentimentItem:nth-child(3) {
+  background-color: #fff3f3;
+}
+
+.sentimentComment {
+  font-size: 14px;
+  color: #696969;
+  line-height: 140%;
+  margin-bottom: 15px;
+  width: 320px;
+}
+
+.sentimentSources {
+  text-align: left;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.sourceItem {
+  margin-bottom: 3px;
+}
+
+.summarySection {
+  width: 320px;
+  margin-left: 20px;
+  margin-top: 24px;
+}
+
+.summaryTitle {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 16px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 16px;
+  border: 1px solid #b4b4b4;
+  font-size: 15px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.summaryItem span {
+  color: #bbb;
+  font-weight: bold;
+}
+
+.robotButton {
+  position: absolute;
+  bottom: 70px; /* 구매하기 버튼 위로 약 31px (구매 버튼 높이+간격 감안) */
+  right: 20px; /* 오른쪽 정렬 (구매하기 버튼과 비슷한 위치) */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.robotIcon {
+  width: 50px; /* 버튼 크기 조절 */
+  height: 50px;
+  border-radius: 50%;
+}
+
+.footerButtons {
+  display: flex;
+  justify-content: space-around;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 10;
+  margin-top: 28px;
+  margin-left: 20px;
+}
+
+.sellButton,
+.buyButton {
+  border: none;
+  border-radius: 7px;
+  font-size: 18px;
+  cursor: pointer;
+  width: 152px;
+  height: 45px;
+  gap: 16px;
+}
+
+.sellButton {
+  background-color: #6c757d;
+  color: white;
+}
+
+.buyButton {
+  background-color: #007bff;
+  color: white;
+}
