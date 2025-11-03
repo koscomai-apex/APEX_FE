@@ -1,0 +1,52 @@
+.messageRow {
+  display: flex;
+  margin-bottom: 24px;
+  max-width: 320px;
+  margin-left: 20px;
+}
+
+.userRow {
+  justify-content: flex-end;
+}
+
+.botRow {
+  justify-content: flex-start;
+}
+
+.messageBubble {
+  padding: 8px;
+  border-radius: 10px;
+  line-height: 1.5;
+  font-size: 16px;
+  word-wrap: break-word;
+}
+
+.userBubble {
+  background-color: #4348a4;
+  color: white;
+  border-bottom-right-radius: 0px;
+}
+
+.botBubble {
+  background-color: #e9eaf5;
+  color: #1e1e1e;
+  border-bottom-left-radius: 0px;
+}
+
+.recommendationTag {
+  background-color: #e0e7fa;
+  color: #2563eb;
+  font-weight: bold;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 텍스트 줄바꿈 처리 */
+.textLine {
+  margin: 0;
+  padding: 0;
+}
