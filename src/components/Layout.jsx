@@ -22,7 +22,7 @@ const Layout = () => {
         <Outlet />
       </main>
 
-      <img src={foot} alt="Footer" style={{ width: "100%" }} />
+      <img src={foot} alt="Footer" style={{ width: "100%", zIndex: 200 }} />
     </div>
   );
 };

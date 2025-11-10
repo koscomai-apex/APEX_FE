@@ -1,3 +1,9 @@
+.container {
+  width: 360dp;
+  height: 782dp;
+  overflow: hidden;
+}
+
 .backButton {
   background: none;
   border: none;
@@ -9,10 +15,12 @@
 
 .inputContainer {
   position: fixed;
+  background-color: #ffffff;
   bottom: 42px;
   margin-left: 20px;
   display: flex;
   width: 320px;
+  z-index: 300;
   height: 42px;
   border-radius: 5px;
   border: 1px solid #888888;
@@ -46,12 +54,6 @@
   color: #222;
 }
 
-.inputContainer {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-}
-
 .input {
   flex: 1;
   padding: 8px;
@@ -66,4 +68,9 @@
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
+}
+
+.chatArea {
+  flex: 1;
+  overflow-y: auto;
 }

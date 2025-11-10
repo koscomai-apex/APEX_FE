@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MessageBubble from "../components/MessageBubble";
+import { BottomSheet } from "../components/BottomSheet";
 import styles from "./ChatPage.module.css";
 
 const ChatPage = () => {
@@ -41,8 +42,7 @@ const ChatPage = () => {
     setMessages([...messages, newMessage]);
     setInput("");
 
-    // 🚀 실제 챗봇 응답 로직은 Gemini API를 호출하여 구현해야 합니다.
-    // 여기서는 간단한 자동 응답을 추가합니다.
+    // 챗봇 응답 임시
     setTimeout(() => {
       const botResponse = {
         id: Date.now() + 1,
@@ -53,7 +53,6 @@ const ChatPage = () => {
     }, 500);
   };
 
-  // 하단 Drawer 메뉴를 열기 위한 상태 (이미지 기반)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
@@ -75,23 +74,18 @@ const ChatPage = () => {
           />
         ))}
       </div>
-
-      <div
-        className={`${styles.drawer} ${isDrawerOpen ? styles.drawerOpen : ""}`}
-      >
-        <div
-          className={styles.drawerHandle}
-          onClick={() => setIsDrawerOpen(false)}
-        ></div>
-        {/* <h3 className={styles.drawerItem}>투자 피드백 받기</h3>
-        <h3 className={styles.drawerItem}>투자 시뮬레이션 하기</h3> */}
+      <div className={styles.investmentScreenArea}>
+        <BottomSheet
+          isOpen={isDrawerOpen}
+          setOpen={setIsDrawerOpen}
+          initPosition="85%"
+          openPosition="75%"
+        >
+          {/* 버튼으로 바꿔야함 */}
+          <p>투자 피드백 상세</p>
+          <p>투자 시뮬레이션 하기</p>
+        </BottomSheet>
       </div>
-      {isDrawerOpen && (
-        <div
-          className={styles.backdrop}
-          onClick={() => setIsDrawerOpen(false)}
-        ></div>
-      )}
 
       <div className={styles.inputContainer}>
         <input className={styles.inputText} type="text" />
