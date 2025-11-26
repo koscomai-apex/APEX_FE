@@ -1,7 +1,7 @@
 .bottomSheet {
   position: fixed;
   width: 360px;
-  height: 232px;
+  height: 240px;
   background: #fff;
   transition: top 0.25s ease-out;
   z-index: 120;

@@ -2,6 +2,7 @@
   width: 360dp;
   height: 782dp;
   overflow: hidden;
+  position: relative;
 }
 
 .backButton {
@@ -16,7 +17,7 @@
 .inputContainer {
   position: fixed;
   background-color: #ffffff;
-  bottom: 42px;
+  bottom: 30px;
   margin-left: 20px;
   display: flex;
   width: 320px;

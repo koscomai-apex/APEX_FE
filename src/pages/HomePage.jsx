@@ -6,9 +6,9 @@ import samsungLogo from "../assets/logos/samsung.png";
 import kakaoLogo from "../assets/logos/kakao.png";
 import hyundaiLogo from "../assets/logos/hyundai.png";
 import naverLogo from "../assets/logos/naver.png";
+import skhynixLogo from "../assets/logos/skhynix.jpeg";
 
 const HomePage = () => {
-  // 임시 더미 데이터
   const myStocks = [
     {
       id: "samsung",
@@ -31,10 +31,11 @@ const HomePage = () => {
       amount: "3주",
       price: 180320,
     },
+
     {
-      id: "hyundai",
-      logo: hyundaiLogo,
-      name: "현대차",
+      id: "skhynix",
+      logo: skhynixLogo,
+      name: "SK하이닉스",
       amount: "1주",
       price: 145000,
     },
@@ -64,6 +65,13 @@ const HomePage = () => {
       logo: hyundaiLogo,
       name: "현대차",
       price: 218000,
+    },
+    {
+      id: "skhynix",
+      logo: skhynixLogo,
+      name: "SK하이닉스",
+      amount: "1주",
+      price: 145000,
     },
   ];
 

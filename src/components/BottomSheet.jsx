@@ -9,7 +9,7 @@ const isMobileBrowser =
 export const BottomSheet = ({
   isOpen,
   setOpen,
-  initPosition = "80%",
+  initPosition = "90%",
   openPosition = "20%",
   children,
 }) => {
@@ -90,7 +90,13 @@ export const BottomSheet = ({
 
   return (
     <>
-      <div ref={divRef} className={styles.bottomSheet}>
+      <div
+        ref={divRef}
+        className={styles.bottomSheet}
+        style={{
+          top: `${isOpen ? openPosPx : initPosPx}px`,
+        }}
+      >
         <div
           className={styles.handle}
           onTouchStart={handleTouchStart}
@@ -100,8 +106,18 @@ export const BottomSheet = ({
         >
           <span />
         </div>
-        <div className={styles.content}>{children}</div>
+        <div
+          className={styles.content}
+          style={{
+            visibility: isOpen ? "visible" : "hidden",
+            opacity: isOpen ? 1 : 0,
+            transition: "opacity 0.3s",
+          }}
+        >
+          {children}
+        </div>
       </div>
+
       <div className={isOpen ? styles.backdrop : ""} />
     </>
   );
