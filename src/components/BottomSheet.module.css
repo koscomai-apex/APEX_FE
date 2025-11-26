@@ -1,0 +1,38 @@
+.bottomSheet {
+  position: fixed;
+  width: 360px;
+  height: 240px;
+  background: #fff;
+  transition: top 0.25s ease-out;
+  z-index: 120;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border: 1px solid #ddd;
+  border-bottom: 0px;
+}
+
+.bottomSheet .handle {
+  width: 360px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bottomSheet .handle span {
+  height: 4px;
+  width: 40px;
+  border-radius: 25px;
+  background: #b4b4b4;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.content {
+  margin-left: 20px;
+  margin-top: 12px;
+  overflow-y: auto;
+  height: 96px;
+}

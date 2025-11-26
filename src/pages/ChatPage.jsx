@@ -1,66 +1,77 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MessageBubble from "../components/MessageBubble";
+import { BottomSheet } from "../components/BottomSheet";
 import styles from "./ChatPage.module.css";
+import { fetchStockSummary } from "../api/apiStockSummary";
+import back from "../assets/back.png";
 
-const ChatPage = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: "user",
-      text: "투자 피드백 받기",
-    },
-    {
-      id: 2,
-      sender: "bot",
-      title: " '매수' 추천 '중' 수준입니다! ",
-      text:
-        "외국인 순매수가 최근 3거래일 연속으로 증가하고 있어요.\n" +
-        "반도체 업황 회복 기대감이 일부 반영된 상태예요.\n" +
-        "주가가 최근 1개월 사이 저점 대비 15% 상승하여 단기 상승세로 진입했어요.",
-    },
-  ]);
-
+const ChatPage = ({ company = "SK하이닉스" }) => {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const navigate = useNavigate();
+
   const handleBack = () => {
     navigate(-1);
   };
 
-  // 사용자 메시지 전송 로직 (임시)
-  const handleSend = () => {
-    if (input.trim() === "") return;
+  // 메세지 추가
+  const sendMessageToAPI = async (userText, mode) => {
+    // 사용자 메시지 먼저 추가
+    const userMessage = { id: Date.now(), sender: "user", text: userText };
+    setMessages((prev) => [...prev, userMessage]);
 
-    const newMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: input,
+    // 로딩 메시지
+    const loadingMessage = {
+      id: Date.now() + 1,
+      sender: "bot",
+      text: "분석 중입니다...",
     };
+    setMessages((prev) => [...prev, loadingMessage]);
 
-    setMessages([...messages, newMessage]);
-    setInput("");
+    try {
+      // mode는 feedback / simulation / undefined
+      const data = await fetchStockSummary({
+        company,
+        input: userText,
+        sessionId: "user-123",
+        mode,
+      });
 
-    // 🚀 실제 챗봇 응답 로직은 Gemini API를 호출하여 구현해야 합니다.
-    // 여기서는 간단한 자동 응답을 추가합니다.
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
+      const botAnswer = data.result?.answer || "답변이 없습니다.";
+      const botMessage = { id: Date.now() + 2, sender: "bot", text: botAnswer };
+
+      // 기존 로딩 메시지 제거 후 실제 답변 추가
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== loadingMessage.id),
+        botMessage,
+      ]);
+    } catch (err) {
+      const errorMessage = {
+        id: Date.now() + 3,
         sender: "bot",
-        text: "사용자님의 메시지를 분석 중입니다. 잠시만 기다려 주세요.",
+        text: "API 호출에 실패했습니다.",
       };
-      setMessages((prevMessages) => [...prevMessages, botResponse]);
-    }, 500);
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== loadingMessage.id),
+        errorMessage,
+      ]);
+    }
   };
 
-  // 하단 Drawer 메뉴를 열기 위한 상태 (이미지 기반)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // 사용자 입력 전송
+  const handleSend = () => {
+    if (input.trim() === "") return;
+    sendMessageToAPI(input); // 일반 질문이면 mode 생략
+    setInput("");
+  };
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <button className={styles.backButton} onClick={handleBack}>
-          &lt;
+          <img src={back} alt="뒤로가기" className={styles.backIcon} />
         </button>
       </header>
 
@@ -75,27 +86,45 @@ const ChatPage = () => {
           />
         ))}
       </div>
-
-      <div
-        className={`${styles.drawer} ${isDrawerOpen ? styles.drawerOpen : ""}`}
-      >
-        <div
-          className={styles.drawerHandle}
-          onClick={() => setIsDrawerOpen(false)}
-        ></div>
-        {/* <h3 className={styles.drawerItem}>투자 피드백 받기</h3>
-        <h3 className={styles.drawerItem}>투자 시뮬레이션 하기</h3> */}
+      <div className={styles.investmentScreenArea}>
+        <BottomSheet
+          isOpen={isDrawerOpen}
+          setOpen={setIsDrawerOpen}
+          initPosition="85%"
+          openPosition="75%"
+        >
+          <p
+            onClick={() => {
+              sendMessageToAPI("투자 피드백 상세", "feedback");
+              setIsDrawerOpen(false);
+            }}
+          >
+            투자 피드백 상세
+          </p>
+          <p
+            onClick={() => {
+              sendMessageToAPI("투자 시뮬레이션 하기", "simulation");
+              setIsDrawerOpen(false);
+            }}
+          >
+            투자 시뮬레이션 하기
+          </p>
+        </BottomSheet>
       </div>
-      {isDrawerOpen && (
-        <div
-          className={styles.backdrop}
-          onClick={() => setIsDrawerOpen(false)}
-        ></div>
-      )}
 
       <div className={styles.inputContainer}>
-        <input className={styles.inputText} type="text" />
-        <button className={styles.upArrow}>↑</button>
+        <input
+          className={styles.inputText}
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSend();
+          }}
+        />
+        <button className={styles.upArrow} onClick={handleSend}>
+          ↑
+        </button>
       </div>
     </div>
   );

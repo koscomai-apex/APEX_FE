@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   LineChart,
@@ -9,63 +9,77 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import { fetchStockSummary } from "../api/apiStockSummary";
 import styles from "./InvestPage.module.css";
 import chatbot from "../assets/chatbot.png";
+import back from "../assets/back.png";
 
 const InvestPage = () => {
   const { stockId } = useParams();
   const [activeTab, setActiveTab] = useState("price");
+  const [stockData, setStockData] = useState(null);
+  const [sentimentData, setSentimentData] = useState(null);
 
-  // 임시 데이터
-  const stockInfo = {
-    samsung: {
-      name: "삼성전자",
-      currentPrice: 138762,
-      priceData: [
-        { time: "09:00", price: 142000 },
-        { time: "10:00", price: 141000 },
-        { time: "11:00", price: 139000 },
-        { time: "12:00", price: 138000 },
-        { time: "13:00", price: 138762 },
-      ],
-      sentiment: {
-        score: "상",
-        date: "2025.10.01 기준",
-        positive: "62%",
-        neutral: "20%",
-        negative: "18%",
-        comment:
-          "공급망 언급량이 62%로 급증하였습니다. 높은 감정 과열 수치를 띄므로 이성적인 판단이 중요합니다.",
-        sources: ["CAFE:20250720-775", "HSS:20250720-112"],
-      },
-    },
-    naver: {
-      name: "네이버",
-      currentPrice: 210000,
-      priceData: [
-        { time: "09:00", price: 208000 },
-        { time: "10:00", price: 210500 },
-        { time: "11:00", price: 209500 },
-        { time: "12:00", price: 211000 },
-        { time: "13:00", price: 210000 },
-      ],
-      sentiment: {
-        score: "중",
-        date: "2025.10.01 기준",
-        positive: "45%",
-        neutral: "40%",
-        negative: "15%",
-        comment:
-          "신규 AI 서비스 출시 기대감으로 긍정적 언급이 소폭 증가했습니다. 투자 전 추가적인 자료 검토가 필요합니다.",
-        sources: ["NEWS:20250930-001"],
-      },
-    },
-    // 오류 방지용 최소 데이터
-    kakao: { name: "카카오", currentPrice: 0, priceData: [], sentiment: {} },
-    hyundai: { name: "현대차", currentPrice: 0, priceData: [], sentiment: {} },
-  }[stockId];
+  const stockNames = {
+    samsung: "삼성전자",
+    naver: "네이버",
+    kakao: "카카오",
+    hyundai: "현대차",
+    skhynix: "sk하이닉스",
+  };
 
-  const currentStock = stockInfo;
+  // ⭐ 기본 데이터
+  const defaultStockData = {
+    currentPrice: 70000,
+    name: "SK하이닉스",
+    priceData: [
+      { time: "09:00", price: 68000 },
+      { time: "10:00", price: 90000 },
+      { time: "11:00", price: 30000 },
+      { time: "12:00", price: 40000 },
+      { time: "13:00", price: 70000 },
+      { time: "14:00", price: 20000 },
+      { time: "15:00", price: 11000 },
+    ],
+  };
+
+  const defaultSentimentData = {
+    compound: 0,
+    ratios: { pos: 0.3, neu: 0.4, neg: 0.3 },
+    reasons: ["데이터 부족으로 임시 값 표시"],
+    generated_at: new Date().toISOString(),
+  };
+
+  useEffect(() => {
+    const companyName = stockNames[stockId] || "SK하이닉스";
+
+    fetchStockSummary({
+      company: companyName,
+      days: 7,
+      sessionId: "user-123",
+    })
+      .then((data) => {
+        console.log("Stock Summary:", data.output);
+        setStockData(data.output);
+      })
+      .catch((err) => console.error(err));
+
+    fetchStockSummary({
+      company: companyName,
+      mode: "sentiment",
+      days: 7,
+      sessionId: "user-123",
+    })
+      .then((data) => {
+        console.log("Sentiment API Result:", data);
+        setSentimentData(data);
+      })
+      .catch((err) => console.error(err));
+  }, [stockId]);
+
+  const currentStock = stockData?.output?.stockInfo || defaultStockData;
+
+  const displaySentimentData = sentimentData || defaultSentimentData;
 
   if (!currentStock || !currentStock.name) {
     return (
@@ -84,7 +98,11 @@ const InvestPage = () => {
   const isChartReady =
     currentStock.priceData && currentStock.priceData.length > 0;
 
-  const isDetailDataReady = stockId === "samsung" || stockId === "naver";
+  const isDetailDataReady =
+    stockId === "samsung" ||
+    stockId === "naver" ||
+    stockId === "kakao" ||
+    stockId === "skhynix";
 
   const navigate = useNavigate();
   const handleBack = () => {
@@ -98,10 +116,10 @@ const InvestPage = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <button className={styles.backButton} onClick={handleBack}>
-          &lt;
+          <img src={back} alt="뒤로가기" className={styles.backIcon} />
         </button>
       </header>
-      <h1 className={styles.stockName}>{currentStock.name}</h1>
+      <h1 className={styles.stockName}>{stockNames[stockId]}</h1>
       <div className={styles.priceDisplay}>
         <p className={styles.currentPrice}>
           {currentStock.currentPrice.toLocaleString()}원
@@ -194,46 +212,38 @@ const InvestPage = () => {
           ) : (
             <section className={styles.sentimentSection}>
               <h2 className={styles.sentimentTitle}>감정 과열도</h2>
-              {currentStock.sentiment &&
-              Object.keys(currentStock.sentiment).length > 0 ? (
+              {sentimentData ? (
                 <>
                   <p className={styles.sentimentScore}>
-                    {currentStock.sentiment.score}
+                    {sentimentData.compound}
                   </p>
                   <p className={styles.sentimentDate}>
-                    {currentStock.sentiment.date}
+                    {" "}
+                    {new Date(sentimentData.generated_at).toLocaleDateString()}
                   </p>
                   <div className={styles.sentimentDetails}>
                     <div className={styles.sentimentItem}>
                       <span className={styles.sentimentLabel}>긍정</span>
                       <span className={styles.sentimentValue}>
-                        {currentStock.sentiment.positive}
+                        {Math.round(sentimentData.ratios.pos * 100)}%
                       </span>
                     </div>
                     <div className={styles.sentimentItem}>
                       <span className={styles.sentimentLabel}>중립</span>
                       <span className={styles.sentimentValue}>
-                        {currentStock.sentiment.neutral}
+                        {Math.round(sentimentData.ratios.neu * 100)}%
                       </span>
                     </div>
                     <div className={styles.sentimentItem}>
                       <span className={styles.sentimentLabel}>부정</span>
                       <span className={styles.sentimentValue}>
-                        {currentStock.sentiment.negative}
+                        {Math.round(sentimentData.ratios.neg * 100)}%
                       </span>
                     </div>
                   </div>
                   <p className={styles.sentimentComment}>
-                    {currentStock.sentiment.comment}
+                    {sentimentData.reasons.join(", ")}
                   </p>
-                  <div className={styles.sentimentSources}>
-                    {currentStock.sentiment.sources &&
-                      currentStock.sentiment.sources.map((src, index) => (
-                        <p key={index} className={styles.sourceItem}>
-                          출처: {src}
-                        </p>
-                      ))}
-                  </div>
                 </>
               ) : (
                 <div className={styles.noDataMessage}>
@@ -255,16 +265,15 @@ const InvestPage = () => {
       <section className={styles.summarySection}>
         <h2 className={styles.summaryTitle}>주식 시장 요약</h2>
         <div className={styles.summaryItem}>
-          기관 순매수 유입
-          <span>&gt;</span>
+          <span>&gt;</span> {stockData?.output?.summary?.market_summary?.[0]}
         </div>
+
         <div className={styles.summaryItem}>
-          분기 실적이 컨센서스 대비 5% 상회
-          <span>&gt;</span>
+          <span>&gt;</span> {stockData?.output?.summary?.market_summary?.[1]}
         </div>
+
         <div className={styles.summaryItem}>
-          글로벌 경기 불확실성으로 큰 폭의 변동 우려
-          <span>&gt;</span>
+          <span>&gt;</span> {stockData?.output?.summary?.market_summary?.[2]}
         </div>
       </section>
 
