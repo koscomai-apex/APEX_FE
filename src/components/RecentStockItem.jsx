@@ -1,14 +1,13 @@
 import React from "react";
 import styles from "./StockItem.module.css";
 
-const StockItem = ({ logo, name, qunatity, price, onClick }) => {
+const RecentStockItem = ({ logo, name, price, onClick }) => {
   return (
     <div className={styles.container} onClick={onClick}>
       <div className={styles.left}>
         <img src={logo} alt={name} className={styles.logo} />
         <div>
           <div className={styles.name}>{name}</div>
-          <div className={styles.amount}>{qunatity}주</div>
         </div>
       </div>
       <div>{price.toLocaleString()}원</div>
@@ -16,4 +15,4 @@ const StockItem = ({ logo, name, qunatity, price, onClick }) => {
   );
 };
 
-export default StockItem;
+export default RecentStockItem;
