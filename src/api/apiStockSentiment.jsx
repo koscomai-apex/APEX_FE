@@ -1,22 +1,20 @@
 import apiClient from "./apiClient";
 
-export const fetchStockSummary = async ({
+export const fetchStockSentiment = async ({
   company,
   days = 7,
-  sessionId = "user-123",
-  mode = "summary",
+  mode = "sentiment",
 }) => {
   try {
     const response = await apiClient.post("/webhook/apex/internal", {
       mode,
       company,
       days,
-      sessionId,
     });
 
     return response.data;
   } catch (error) {
-    console.error("Stock Summary API Error:", error);
+    console.error("Stock Sentiment API Error:", error);
     throw error;
   }
 };

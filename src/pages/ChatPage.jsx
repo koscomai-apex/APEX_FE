@@ -1,69 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MessageBubble from "../components/MessageBubble";
 import { BottomSheet } from "../components/BottomSheet";
 import styles from "./ChatPage.module.css";
-import { fetchStockSummary } from "../api/apiStockSummary";
 import back from "../assets/back.png";
+import { fetchChat } from "../api/apiChat";
+import { fetchChatFeedback } from "../api/apiChatFeedback";
+import { fetchChatSimulation } from "../api/apiChatSimulation";
 
 const ChatPage = ({ company = "SK하이닉스" }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null); // 스크롤을 위한 Ref 추가
+
+  // 컴포넌트 마운트 및 메시지 업데이트 시 스크롤 최하단으로 이동
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleBack = () => {
     navigate(-1);
   };
 
-  // 메세지 추가
-  const sendMessageToAPI = async (userText, mode) => {
-    // 사용자 메시지 먼저 추가
+  const sendMessageToAPI = async (userText, mode = "chat") => {
+    if (isLoading) return;
+
     const userMessage = { id: Date.now(), sender: "user", text: userText };
     setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
-    // 로딩 메시지
+    const loadingMessageId = Date.now() + 1;
     const loadingMessage = {
-      id: Date.now() + 1,
+      id: loadingMessageId,
       sender: "bot",
       text: "분석 중입니다...",
     };
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      // mode는 feedback / simulation / undefined
-      const data = await fetchStockSummary({
-        company,
-        input: userText,
-        sessionId: "user-123",
-        mode,
-      });
+      let data;
+      switch (mode) {
+        case "feedback":
+          data = await fetchChatFeedback({ company, input: userText });
+          break;
+        case "simulation":
+          data = await fetchChatSimulation({ company, input: userText });
+          break;
+        case "chat":
+        default:
+          data = await fetchChat({ company, input: userText });
+          break;
+      }
+      const response = Array.isArray(data) ? data[0] : data;
 
-      const botAnswer = data.result?.answer || "답변이 없습니다.";
-      const botMessage = { id: Date.now() + 2, sender: "bot", text: botAnswer };
+      const botAnswer =
+        response?.result?.answer || `[${mode}] 요청에 대한 답변이 없습니다.`;
 
-      // 기존 로딩 메시지 제거 후 실제 답변 추가
+      const botMessage = {
+        id: Date.now() + 2,
+        sender: "bot",
+        text: botAnswer,
+      };
+
       setMessages((prev) => [
-        ...prev.filter((m) => m.id !== loadingMessage.id),
+        ...prev.filter((m) => m.id !== loadingMessageId),
         botMessage,
       ]);
     } catch (err) {
+      console.error(`[${mode}] API 호출 오류:`, err);
       const errorMessage = {
         id: Date.now() + 3,
         sender: "bot",
-        text: "API 호출에 실패했습니다.",
+        text: `[${mode}] API 호출에 실패했습니다. 서버 오류를 확인해주세요.`,
       };
       setMessages((prev) => [
-        ...prev.filter((m) => m.id !== loadingMessage.id),
+        ...prev.filter((m) => m.id !== loadingMessageId),
         errorMessage,
       ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // 사용자 입력 전송
   const handleSend = () => {
     if (input.trim() === "") return;
-    sendMessageToAPI(input); // 일반 질문이면 mode 생략
+    sendMessageToAPI(input.trim(), "chat");
     setInput("");
   };
 
@@ -85,7 +109,10 @@ const ChatPage = ({ company = "SK하이닉스" }) => {
             recommendation={msg.recommendation}
           />
         ))}
+        <div ref={messagesEndRef} />
+        <div style={{ height: "150px" }} />
       </div>
+
       <div className={styles.investmentScreenArea}>
         <BottomSheet
           isOpen={isDrawerOpen}
@@ -95,17 +122,21 @@ const ChatPage = ({ company = "SK하이닉스" }) => {
         >
           <p
             onClick={() => {
-              sendMessageToAPI("투자 피드백 상세", "feedback");
+              // mode: "feedback" 으로 설정
+              sendMessageToAPI("투자 피드백 받기", "feedback");
               setIsDrawerOpen(false);
             }}
+            className={styles.bottomSheetItem}
           >
             투자 피드백 상세
           </p>
           <p
             onClick={() => {
+              // mode: "simulation" 으로 설정
               sendMessageToAPI("투자 시뮬레이션 하기", "simulation");
               setIsDrawerOpen(false);
             }}
+            className={styles.bottomSheetItem}
           >
             투자 시뮬레이션 하기
           </p>
@@ -119,10 +150,20 @@ const ChatPage = ({ company = "SK하이닉스" }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleSend();
+            if (e.key === "Enter" && !isLoading) handleSend();
           }}
+          disabled={isLoading}
+          placeholder={
+            isLoading
+              ? "답변을 기다리는 중입니다..."
+              : "여기에 메시지를 입력하세요..."
+          }
         />
-        <button className={styles.upArrow} onClick={handleSend}>
+        <button
+          className={styles.upArrow}
+          onClick={handleSend}
+          disabled={isLoading}
+        >
           ↑
         </button>
       </div>

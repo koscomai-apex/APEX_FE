@@ -10,12 +10,14 @@ import {
   ReferenceLine,
 } from "recharts";
 import { fetchStockSummary } from "../api/apiStockSummary";
+import { fetchStockSentiment } from "../api/apiStockSentiment";
 import styles from "./InvestPage.module.css";
 import chatbot from "../assets/chatbot.png";
 import back from "../assets/back.png";
 
 const InvestPage = () => {
   const { stockId } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("price");
   const [stockData, setStockData] = useState(null);
   const [sentimentData, setSentimentData] = useState(null);
@@ -28,59 +30,100 @@ const InvestPage = () => {
     skhynix: "sk하이닉스",
   };
 
-  // ⭐ 기본 데이터
+  let initialPrice = 544000;
+  if (stockId === "samsung") initialPrice = 103500;
+  else if (stockId === "hyundai") initialPrice = 261500;
+  else if (stockId === "kakao") initialPrice = 59700;
+  else if (stockId === "skhynix") initialPrice = 544000;
+
   const defaultStockData = {
-    currentPrice: 70000,
+    currentPrice: initialPrice,
     name: "SK하이닉스",
-    priceData: [
-      { time: "09:00", price: 68000 },
-      { time: "10:00", price: 90000 },
-      { time: "11:00", price: 30000 },
-      { time: "12:00", price: 40000 },
-      { time: "13:00", price: 70000 },
-      { time: "14:00", price: 20000 },
-      { time: "15:00", price: 11000 },
-    ],
+    priceData: (() => {
+      const startTime = 9 * 60;
+      const endTime = 15 * 60;
+      const data = [];
+      let price = initialPrice;
+      for (let t = startTime; t <= endTime; t += 5) {
+        const hour = Math.floor(t / 60);
+        const min = t % 60;
+        const timeStr = `${String(hour).padStart(2, "0")}:${String(
+          min
+        ).padStart(2, "0")}`;
+
+        const change = Math.floor(Math.random() * 10000 - 5000);
+
+        price += change;
+
+        data.push({ time: timeStr, price });
+      }
+      return data;
+    })(),
   };
 
-  const defaultSentimentData = {
-    compound: 0,
-    ratios: { pos: 0.3, neu: 0.4, neg: 0.3 },
-    reasons: ["데이터 부족으로 임시 값 표시"],
-    generated_at: new Date().toISOString(),
+  const formatDateTime = (isoString) => {
+    const date = new Date(isoString);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+    return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
   };
+
+  const displaySentimentData =
+    Array.isArray(sentimentData) && sentimentData.length > 0
+      ? sentimentData[0]
+      : {
+          compound: 0,
+          ratios: { pos: 0, neu: 0, neg: 0 },
+          reasons: ["데이터 없음"],
+          generated_at: new Date().toISOString(),
+          level: "상",
+        };
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const companyName = stockNames[stockId] || "SK하이닉스";
+    setIsLoading(true);
 
-    fetchStockSummary({
-      company: companyName,
-      days: 7,
-      sessionId: "user-123",
-    })
-      .then((data) => {
-        console.log("Stock Summary:", data.output);
-        setStockData(data.output);
-      })
-      .catch((err) => console.error(err));
+    Promise.all([
+      fetchStockSummary({
+        company: companyName,
+      }),
+      fetchStockSentiment({
+        company: companyName,
+      }),
+    ])
+      .then(([stockResponse, sentimentResponse]) => {
+        const rawData = Array.isArray(stockResponse)
+          ? stockResponse[0]
+          : stockResponse;
 
-    fetchStockSummary({
-      company: companyName,
-      mode: "sentiment",
-      days: 7,
-      sessionId: "user-123",
-    })
-      .then((data) => {
-        console.log("Sentiment API Result:", data);
-        setSentimentData(data);
+        const summaryData = rawData?.output || rawData;
+
+        console.log("Stock Summary Processed:", summaryData);
+        setStockData(summaryData);
+        setSentimentData(sentimentResponse.output || sentimentResponse);
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error("API Fetch Error:", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [stockId]);
 
+  if (isLoading) {
+    return (
+      <div className={styles.noDataMessage} style={{ backgroundColor: "#fff" }}>
+        AI가 분석 중...
+      </div>
+    );
+  }
+
   const currentStock = stockData?.output?.stockInfo || defaultStockData;
-
-  const displaySentimentData = sentimentData || defaultSentimentData;
-
   if (!currentStock || !currentStock.name) {
     return (
       <div className={styles.noDataMessage} style={{ backgroundColor: "#fff" }}>
@@ -98,13 +141,10 @@ const InvestPage = () => {
   const isChartReady =
     currentStock.priceData && currentStock.priceData.length > 0;
 
-  const isDetailDataReady =
-    stockId === "samsung" ||
-    stockId === "naver" ||
-    stockId === "kakao" ||
-    stockId === "skhynix";
+  const isDetailDataReady = ["samsung", "naver", "kakao", "skhynix"].includes(
+    stockId
+  );
 
-  const navigate = useNavigate();
   const handleBack = () => {
     navigate(-1);
   };
@@ -119,7 +159,9 @@ const InvestPage = () => {
           <img src={back} alt="뒤로가기" className={styles.backIcon} />
         </button>
       </header>
+
       <h1 className={styles.stockName}>{stockNames[stockId]}</h1>
+
       <div className={styles.priceDisplay}>
         <p className={styles.currentPrice}>
           {currentStock.currentPrice.toLocaleString()}원
@@ -154,7 +196,7 @@ const InvestPage = () => {
                   <div className={styles.chartContainer}>
                     <ResponsiveContainer width="100%" height={200}>
                       <LineChart
-                        data={currentStock.priceData} // 🟢 오류 수정: priceData 배열을 전달
+                        data={currentStock.priceData}
                         margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                       >
                         <XAxis dataKey="time" hide />
@@ -163,7 +205,6 @@ const InvestPage = () => {
                           formatter={(value) => `${value.toLocaleString()}원`}
                           labelFormatter={(label) => `${label} 시`}
                         />
-                        {/* 🟢 기준선 (ReferenceLine) 추가 */}
                         {averagePrice > 0 && (
                           <ReferenceLine
                             y={averagePrice}
@@ -215,34 +256,48 @@ const InvestPage = () => {
               {sentimentData ? (
                 <>
                   <p className={styles.sentimentScore}>
-                    {sentimentData.compound}
+                    {{
+                      긍정: "상",
+                      중립: "중",
+                      부정: "하",
+                    }[displaySentimentData?.level] ?? "중"}
                   </p>
+
                   <p className={styles.sentimentDate}>
-                    {" "}
-                    {new Date(sentimentData.generated_at).toLocaleDateString()}
+                    {formatDateTime(displaySentimentData.generated_at)}
                   </p>
                   <div className={styles.sentimentDetails}>
                     <div className={styles.sentimentItem}>
                       <span className={styles.sentimentLabel}>긍정</span>
                       <span className={styles.sentimentValue}>
-                        {Math.round(sentimentData.ratios.pos * 100)}%
+                        {Math.round(
+                          (displaySentimentData?.ratios?.pos || 0) * 100
+                        )}
+                        %
                       </span>
                     </div>
                     <div className={styles.sentimentItem}>
                       <span className={styles.sentimentLabel}>중립</span>
                       <span className={styles.sentimentValue}>
-                        {Math.round(sentimentData.ratios.neu * 100)}%
+                        {Math.round(
+                          (displaySentimentData?.ratios?.neu || 0) * 100
+                        )}
+                        %
                       </span>
                     </div>
                     <div className={styles.sentimentItem}>
                       <span className={styles.sentimentLabel}>부정</span>
                       <span className={styles.sentimentValue}>
-                        {Math.round(sentimentData.ratios.neg * 100)}%
+                        {Math.round(
+                          (displaySentimentData?.ratios?.neg || 0) * 100
+                        )}
+                        %
                       </span>
                     </div>
                   </div>
                   <p className={styles.sentimentComment}>
-                    {sentimentData.reasons.join(", ")}
+                    {stockData?.summary?.sentiment_based ||
+                      "감정 분석 데이터가 없습니다."}
                   </p>
                 </>
               ) : (
@@ -254,27 +309,19 @@ const InvestPage = () => {
           )}
         </>
       ) : (
-        // 데이터 준비 중 메시지 (카카오, 현대차 등)
         <div className={styles.noDataMessage} style={{ marginBottom: "30px" }}>
-          <p>
-            {currentStock.name} 종목의 상세 분석 데이터는 현재 준비 중입니다.
-          </p>
+          <p>현종목의 상세 분석 데이터는 현재 준비 중입니다.</p>
         </div>
       )}
 
       <section className={styles.summarySection}>
         <h2 className={styles.summaryTitle}>주식 시장 요약</h2>
-        <div className={styles.summaryItem}>
-          <span>&gt;</span> {stockData?.output?.summary?.market_summary?.[0]}
-        </div>
-
-        <div className={styles.summaryItem}>
-          <span>&gt;</span> {stockData?.output?.summary?.market_summary?.[1]}
-        </div>
-
-        <div className={styles.summaryItem}>
-          <span>&gt;</span> {stockData?.output?.summary?.market_summary?.[2]}
-        </div>
+        {stockData?.summary?.market_summary?.map((item, idx) => (
+          <div key={idx} className={styles.summaryItem}>
+            {item}
+            <span>&gt;</span>
+          </div>
+        ))}
       </section>
 
       <footer className={styles.footerButtons}>

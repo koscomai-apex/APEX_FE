@@ -1,22 +1,24 @@
 import apiClient from "./apiClient";
 
-export const fetchStockSummary = async ({
+export const fetchChatFeedback = async ({
   company,
   days = 7,
+  mode = "feedback",
   sessionId = "user-123",
-  mode = "summary",
+  input,
 }) => {
   try {
     const response = await apiClient.post("/webhook/apex/internal", {
+      input,
+      sessionId,
       mode,
       company,
       days,
-      sessionId,
     });
 
     return response.data;
   } catch (error) {
-    console.error("Stock Summary API Error:", error);
+    console.error("chat feedback API Error:", error);
     throw error;
   }
 };

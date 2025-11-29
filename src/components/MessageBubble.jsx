@@ -10,10 +10,6 @@ import styles from "./MessageBubble.module.css";
  */
 const MessageBubble = ({ sender, text, recommendation }) => {
   const isUser = sender === "user";
-
-  // contentClass와 bubbleClass는 styles가 로드되면 사용 가능.
-  // 현재 오류 수정 후에는 정상적으로 작동할 것입니다.
-  // const contentClass = isUser ? styles.userContent : styles.botContent; // 현재 사용되지 않음
   const bubbleClass = isUser ? styles.userBubble : styles.botBubble;
 
   return (
@@ -29,7 +25,6 @@ const MessageBubble = ({ sender, text, recommendation }) => {
           </div>
         )}
         <div className={styles.messageContent}>
-          {/* 텍스트 내용을 줄바꿈 처리하여 렌더링 */}
           {text.split("\n").map((line, index) => (
             <p key={index} className={styles.textLine}>
               {line}
